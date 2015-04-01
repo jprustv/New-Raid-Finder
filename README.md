@@ -1,4 +1,4 @@
-## New-Raid-Finder
+## New Raid Finder
 New Raid Finder is an Addon for the game RIFT (http://www.riftgame.com).
 
 This addon was originally created by Vexxx (https://github.com/demivion) and with his authorization, I am now continuing his project.
