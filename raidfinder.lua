@@ -1,10 +1,10 @@
 --Variables
 
-local addonInfo, RaidFinder = ...
-local rf = RaidFinder
+local addonInfo, NewRaidFinder = ...
+local rf = NewRaidFinder
 
 rf.uiElements = {}
-rf.uiElements.context = UI.CreateContext("RaidFinder")
+rf.uiElements.context = UI.CreateContext("NewRaidFinder")
 rf.uiElements.context:SetSecureMode("restricted")
 
 rf.needsbroadcast = false
@@ -33,8 +33,9 @@ rf.EU = nil
 rf.alerttext = ""
 rf.numberOfT1Achievs = 12
 rf.numberOfT2Achievs = 11
+rf.achtable = {}
 
-RaidFinder.gridData = {
+NewRaidFinder.gridData = {
 	headers = {	
 --[[		['players'] = {	
 			{align = 'left', header = "Player Name", width = 165 },
@@ -195,7 +196,7 @@ function rf.settings()
 			},
 		raiddata = {
 			name = "",
-			raidtype = "misc",
+			raidtype = "exp",
 			loot = "MS/OS",
 			roles = {tank = false, dps = false, heal = false, support = false},
 			note = "Note.",
@@ -243,22 +244,61 @@ function rf.main(_, addon)
 		print ("New Raid Finder Loaded v" .. addonInfo.toc.Version)
 	
 		
-	table.insert(Event.System.Update.Begin, 		{rf.onupdate, 		"RaidFinder", "OnUpdate" })
+	table.insert(Event.System.Update.Begin, 		{rf.onupdate, 		"NewRaidFinder", "OnUpdate" })
 	rf.updateindex = #Event.System.Update.Begin
 	Event.System.Update.Begin[rf.updateindex][1] = rf.onupdate	
 	
-	Command.Message.Accept("channel", "raidfinder")
-	Command.Message.Accept("tell", "raidfinder")
+	Command.Message.Accept("channel", "newraidfinder")
+	Command.Message.Accept("tell", "newraidfinder")
 	
 	rf.UI:addonButton()
 	
 	EnKai.version.init(addonInfo.toc.Identifier, addonInfo.toc.Version)
-	
+
+	local achList = Inspect.Achievement.List()
+	Command.System.Watchdog.Quiet()
+		
+	for k,v in pairs(achList) do
+		local achiev = Inspect.Achievement.Detail(k)
+		local achievName = achiev.name
+		-- BEGINING OF ACHIEVMENTS
+		--ROF
+		if achievName:lower() == "undoing ungolok" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "skelfless" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "your fate is sealed" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "a dark path ended" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "conqueror: the rhen of fate" then
+			table.insert(rf.achtable, k)
+		-- MS
+		elseif achievName:lower() == "bulf, herald of the end" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "sharekt" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "weather the storm" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "unwinding infinity" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "threngotten" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "conqueror: mount sharax" then
+			table.insert(rf.achtable, k)
+		-- TF
+		elseif achievName:lower() == "johanna fight me?" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "squashed" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "the mechanical tyrant" then
+			table.insert(rf.achtable, k)
+		elseif achievName:lower() == "conqueror: tyrant's forge" then
+			table.insert(rf.achtable, k)
+		-- END OF ACHIEVMENTS
+		end
 	end	
-	
-	
-
-
+end	
 	
 end
 
@@ -478,13 +518,11 @@ function rf.playerdata()
 			type = "",
 			}		
 		
-	local achtable = {}
-	local catList = Inspect.Achievement.Category.List()
-	local achList = Inspect.Achievement.List()
-	Command.System.Watchdog.Quiet()
-	local i=0
-	for k,v in pairs(achList) do
-		local achiev = Inspect.Achievement.Detail(k)
+	--local achList = Inspect.Achievement.List()
+	--Command.System.Watchdog.Quiet()
+	
+	for k, v in pairs(rf.achtable) do
+		local achiev = Inspect.Achievement.Detail(v)
 		local achievName = achiev.name
 		-- BEGINING OF ACHIEVMENTS
 		--ROF
@@ -553,7 +591,7 @@ function rf.playerdata()
 		-- END OF ACHIEVMENTS
 		end
 	end
-	
+		
 	if data.achiev.rof == 4 then
 		data.achiev.RC = (data.achiev.RC+1)
 	end
@@ -664,7 +702,7 @@ function rf.broadcast(data)
 	end
 
 
-	Command.Message.Broadcast("channel", channel, "raidfinder", data)
+	Command.Message.Broadcast("channel", channel, "newraidfinder", data)
 
 	
 end
@@ -694,7 +732,7 @@ end
 function rf.sendtest(vname, vdata, vfailed)
 	
 	if vfailed == "none" then
-		Command.Message.Broadcast("tell", vname, "raidfinder", vdata, function(failure, message)
+		Command.Message.Broadcast("tell", vname, "newraidfinder", vdata, function(failure, message)
 			if failure == true then
 				failed = "broadfailed"
 				rf.sendtest(vname,vdata,failed)
@@ -704,7 +742,7 @@ function rf.sendtest(vname, vdata, vfailed)
 		end)
 			
 	elseif vfailed == "broadfailed" then
-		Command.Message.Send(vname, "raidfinder", vdata, function(failure, message)
+		Command.Message.Send(vname, "newraidfinder", vdata, function(failure, message)
 			if failure == true then
 				failed = "sendfailed"
 				rf.sendtest(vname,vdata,failed)
@@ -947,7 +985,7 @@ function rf.receive(from, type, channel, identifier, incoming)
 	local raids = {}
 	
 	local now = Inspect.Time.Frame()
-	if identifier == "raidfinder" then
+	if identifier == "newraidfinder" then
 		local decompressed = zlib.inflate()(incoming, "finish")
 
 		local data = {}
@@ -971,6 +1009,7 @@ function rf.receive(from, type, channel, identifier, incoming)
 		
 			if data.type == "player" then
 			
+					
 				rf.gridData.puggerdata[data.name] = {
 												name = data.name,
 												hit = data.hit,
@@ -1155,7 +1194,7 @@ function rf.UI:createUI()
 	rf.UI.frame:SetVisible(true)		
 
 	rf.UI.frame.closeButton = UI.CreateFrame('Texture', 'MainClose', rf.UI.frame)
-	rf.UI.frame.closeButton:SetTextureAsync('RaidFinder', 'lib/EnKai/gfx/btnClose.png')
+	rf.UI.frame.closeButton:SetTextureAsync('NewRaidFinder', 'lib/EnKai/gfx/btnClose.png')
 	rf.UI.frame.closeButton:SetPoint("TOPRIGHT", rf.UI.frame, "TOPRIGHT", -12, 18)
 	rf.UI.frame.closeButton:SetLayer(2)
 	
@@ -1172,11 +1211,11 @@ function rf.UI:createUI()
 	rf.UI.frame.paneInstructionsTab = UI.CreateFrame ('Frame', 'RFInstructionsTab', rf.UI.frame)
 	
 	rf.UI.frame.tabPane = EnKai.ui.nkTabpane('RFFrameTabPane', rf.UI.frame)
-	rf.UI.frame.tabPane:SetBodyTexture('RaidFinder','gfx/tabPaneBG.png')
+	rf.UI.frame.tabPane:SetBodyTexture('NewRaidFinder','gfx/tabPaneBG.png')
 	rf.UI.frame.tabPane:SetWidth(928)
 	rf.UI.frame.tabPane:SetHeight(512.5)
-	rf.UI.frame.tabPane:SetHeaderTexture (true, 'RaidFinder', 'gfx/tabPaneHorizActive.png', 113, 28)
-	rf.UI.frame.tabPane:SetHeaderTexture (false, 'RaidFinder', 'gfx/tabPaneHorizInActive.png', 113, 28)
+	rf.UI.frame.tabPane:SetHeaderTexture (true, 'NewRaidFinder', 'gfx/tabPaneHorizActive.png', 113, 28)
+	rf.UI.frame.tabPane:SetHeaderTexture (false, 'NewRaidFinder', 'gfx/tabPaneHorizInActive.png', 113, 28)
 	rf.UI.frame.tabPane:SetPoint("BOTTOMLEFT", rf.UI.frame,"BOTTOMLEFT",23,-20)
 	rf.UI.frame.tabPane:SetVertical(false, true)
 	rf.UI.frame.tabPane:SetLayer(1)
@@ -1224,7 +1263,7 @@ function rf.UI:setupPlayerTab()
 	--Grid Background
 	frame.gridBG = UI.CreateFrame('Texture', 'RFPlayerGridBack', frame)
 	frame.gridBG:SetLayer(1)
-	frame.gridBG:SetTextureAsync('RaidFinder', 'gfx/databaseGridBG.png')
+	frame.gridBG:SetTextureAsync('NewRaidFinder', 'gfx/databaseGridBG.png')
 	frame.gridBG:SetWidth(910)
 	frame.gridBG:SetHeight(400)
 	frame.gridBG:SetPoint("TOPLEFT", frame, "TOPLEFT", 10, 36) -- SE DER PAL DAR UMA OLHADA NESSA LINHA E MUDAR O 10 PARA 7
@@ -1348,7 +1387,7 @@ function rf.UI:setupPlayerTab()
 	end, 'RFPlayerSearch.TextfieldChanged')
 	
 	frame.resetSearch = UI.CreateFrame('Texture', 'RFPlayerSearchReset', frame)
-	frame.resetSearch:SetTextureAsync("RaidFinder", "gfx/iconCancel.png")
+	frame.resetSearch:SetTextureAsync("NewRaidFinder", "gfx/iconCancel.png")
 	frame.resetSearch:SetPoint("CENTERLEFT", frame.editSearch, "CENTERRIGHT", 5, 0)
 	frame.resetSearch:SetLayer(2)
 	
@@ -1440,7 +1479,7 @@ function rf.UI:setupRaidTab()
 	--Grid Background
 	frame.gridBG = UI.CreateFrame('Texture', 'RFRaidGridBack', frame)
 	frame.gridBG:SetLayer(1)
-	frame.gridBG:SetTextureAsync('RaidFinder', 'gfx/databaseGridBG.png')
+	frame.gridBG:SetTextureAsync('NewRaidFinder', 'gfx/databaseGridBG.png')
 	frame.gridBG:SetWidth(910)
 	frame.gridBG:SetHeight(400)
 	frame.gridBG:SetPoint("TOPLEFT", frame, "TOPLEFT", 7, 36)
@@ -1521,7 +1560,7 @@ function rf.UI:setupRaidTab()
 	end, 'RFRaidSearch.TextfieldChanged')
 	
 	frame.resetSearch = UI.CreateFrame('Texture', 'RFRaidSearchReset', frame)
-	frame.resetSearch:SetTextureAsync("RaidFinder", "gfx/iconCancel.png")
+	frame.resetSearch:SetTextureAsync("NewRaidFinder", "gfx/iconCancel.png")
 	frame.resetSearch:SetPoint("CENTERLEFT", frame.editSearch, "CENTERRIGHT", 5, 0)
 	frame.resetSearch:SetLayer(2)
 	
@@ -1641,14 +1680,14 @@ function rf.UI:setupSettingsTab()
 
 	frame.AboutBG = UI.CreateFrame('Texture', 'RFAboutBG', frame)
 	frame.AboutBG:SetLayer(1)
-	frame.AboutBG:SetTexture('RaidFinder', 'gfx/TabPaneBG.png')
+	frame.AboutBG:SetTexture('NewRaidFinder', 'gfx/TabPaneBG.png')
 	frame.AboutBG:SetWidth(655)
 	frame.AboutBG:SetHeight(400)
 	frame.AboutBG:SetPoint("TOPLEFT", frame, "TOPLEFT", 7, 36)	
 	
 	frame.SettingsBG = UI.CreateFrame('Texture', 'RFSettingsBG', frame)
 	frame.SettingsBG:SetLayer(1)
-	frame.SettingsBG:SetTexture('RaidFinder', 'gfx/TabPaneBG.png')
+	frame.SettingsBG:SetTexture('NewRaidFinder', 'gfx/TabPaneBG.png')
 	frame.SettingsBG:SetWidth(255)
 	frame.SettingsBG:SetHeight(400)
 	frame.SettingsBG:SetPoint("TOPLEFT", frame.AboutBG, "TOPRIGHT", 0, 0)	
@@ -1915,7 +1954,7 @@ function rf.UI:setupPostTab()
 
 	frame.PostPlayerBG = UI.CreateFrame('Texture', 'RFPostPlayerBack', frame)
 	frame.PostPlayerBG:SetLayer(1)
-	frame.PostPlayerBG:SetTexture('RaidFinder', 'gfx/TabPaneBG.png')
+	frame.PostPlayerBG:SetTexture('NewRaidFinder', 'gfx/TabPaneBG.png')
 	frame.PostPlayerBG:SetWidth(910)
 	frame.PostPlayerBG:SetHeight(200)
 	frame.PostPlayerBG:SetPoint("TOPLEFT", frame, "TOPLEFT", 7, 36)
@@ -1923,7 +1962,7 @@ function rf.UI:setupPostTab()
 	
 	frame.PostRaidBG = UI.CreateFrame('Texture', 'RFPostRaidBack', frame)
 	frame.PostRaidBG:SetLayer(1)
-	frame.PostRaidBG:SetTexture('RaidFinder', 'gfx/TabPaneBG.png')
+	frame.PostRaidBG:SetTexture('NewRaidFinder', 'gfx/TabPaneBG.png')
 	frame.PostRaidBG:SetWidth(910)
 	frame.PostRaidBG:SetHeight(200)
 	frame.PostRaidBG:SetPoint("TOPLEFT", frame.PostPlayerBG, "BOTTOMLEFT", 0, 1)
@@ -2583,7 +2622,7 @@ function rf.UI:setupPostTab()
 			need = ""
 		end
 		
-		local macro = (channel .. " [RaidFinder] LF" .. room .. "M for " .. raid .. need .. tank .. heal .. dps .. support .. ".  Loot: " .. loot .. ". " .. note) 
+		local macro = (channel .. " [NewRaidFinder] LF" .. room .. "M for " .. raid .. need .. tank .. heal .. dps .. support .. ".  Loot: " .. loot .. ". " .. note) 
 		
 		if (channel ~= nil and channel ~= "") then
 			frame.btRaidPost:SetSecureMode("restricted")
@@ -2662,7 +2701,7 @@ function rf.UI:setupStatusTab()
 
 	frame.StatusPlayerBG = UI.CreateFrame('Texture', 'RFStatusPlayerBack', frame)
 	frame.StatusPlayerBG:SetLayer(1)
-	frame.StatusPlayerBG:SetTextureAsync('RaidFinder', 'gfx/databaseGridBG.png')
+	frame.StatusPlayerBG:SetTextureAsync('NewRaidFinder', 'gfx/databaseGridBG.png')
 	frame.StatusPlayerBG:SetWidth(910)
 	frame.StatusPlayerBG:SetHeight(200)
 	frame.StatusPlayerBG:SetPoint("TOPLEFT", frame, "TOPLEFT", 7, 36)
@@ -2670,7 +2709,7 @@ function rf.UI:setupStatusTab()
 	
 	frame.StatusRaidBG = UI.CreateFrame('Texture', 'RFStatusRaidBack', frame)
 	frame.StatusRaidBG:SetLayer(1)
-	frame.StatusRaidBG:SetTextureAsync('RaidFinder', 'gfx/databaseGridBG.png')
+	frame.StatusRaidBG:SetTextureAsync('NewRaidFinder', 'gfx/databaseGridBG.png')
 	frame.StatusRaidBG:SetWidth(910)
 	frame.StatusRaidBG:SetHeight(200)
 	frame.StatusRaidBG:SetPoint("TOPLEFT", frame.StatusPlayerBG, "BOTTOMLEFT", 0, 1)	
@@ -3433,7 +3472,7 @@ function rf.UI:addonButton()
 	
 	rf.UI.button = UI.CreateFrame ('Texture', 'RFButton', rf.uiElements.context)
 	local button = rf.UI.button
-	button:SetTextureAsync('RaidFinder', 'lib/EnKai/gfx/actionButton.png')
+	button:SetTextureAsync('NewRaidFinder', 'lib/EnKai/gfx/actionButton.png')
 	button:SetWidth(35 * rfsettings.aButtonS)
 	button:SetHeight(35 * rfsettings.aButtonS)
 	button:SetPoint ("CENTER", UIParent, "CENTER", rfsettings.aButtonX, rfsettings.aButtonY)
@@ -3442,7 +3481,7 @@ function rf.UI:addonButton()
 	
 	rf.UI.texture = UI.CreateFrame ('Texture', 'RFbtnTexture', rf.uiElements.context)
 	local texture = rf.UI.texture
-	texture:SetTextureAsync("RaidFinder", "gfx/rflogo.png")
+	texture:SetTextureAsync("NewRaidFinder", "gfx/rflogo.png")
 	texture:SetPoint("TOPLEFT", button, "TOPLEFT")
 	texture:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT")
 	texture:SetVisible(true)
@@ -3450,7 +3489,7 @@ function rf.UI:addonButton()
 	
 	rf.UI.flashtexture = UI.CreateFrame ('Texture', 'RFflashTexture', rf.uiElements.context)
 	local flashtexture = rf.UI.flashtexture
-	flashtexture:SetTextureAsync("RaidFinder", "gfx/buttonflash.png")
+	flashtexture:SetTextureAsync("NewRaidFinder", "gfx/buttonflash.png")
 	flashtexture:SetPoint("TOPLEFT", button, "TOPLEFT", (-5* rfsettings.aButtonS),(-5* rfsettings.aButtonS))
 	flashtexture:SetPoint("BOTTOMRIGHT", button, "BOTTOMRIGHT",(5* rfsettings.aButtonS),(5* rfsettings.aButtonS))
 	flashtexture:SetAlpha(0)
@@ -3479,7 +3518,7 @@ function rf.UI:addonButton()
 		local mouseData = Inspect.Mouse()
 		startX, startY = mouseData.x, mouseData.y
 		
-	end, "RaidFinder.Right.Down")	
+	end, "NewRaidFinder.Right.Down")	
 	
 	button:EventAttach(Event.UI.Input.Mouse.Cursor.Move, function(self, _, x, y)
 		if rfsettings.UIlock == true then return end
@@ -3489,7 +3528,7 @@ function rf.UI:addonButton()
 		local curdivY = y - startY
 		
 		button:SetPoint("CENTER", UIParent, "CENTER", rfsettings.aButtonX + curdivX, rfsettings.aButtonY + curdivY )
-	end, "RaidFinder.Mouse.Cursor.Move")	
+	end, "NewRaidFinder.Mouse.Cursor.Move")	
 	
 	button:EventAttach(Event.UI.Input.Mouse.Right.Up, function(self, _)	
 		if rfsettings.UIlock == true then return end
@@ -3507,7 +3546,7 @@ function rf.UI:addonButton()
 		rfsettings.aButtonY = rfsettings.aButtonY + curdivY
 		
 
-	end, "RaidFinder.Right.Up")	
+	end, "NewRaidFinder.Right.Up")	
 	
 	button:EventAttach(Event.UI.Input.Mouse.Right.Upoutside, function(self)
 		if rfsettings.UIlock == true then return end
@@ -3521,7 +3560,7 @@ function rf.UI:addonButton()
 			
 		rfsettings.aButtonX = rfsettings.aButtonX + curdivX
 		rfsettings.aButtonY = rfsettings.aButtonY + curdivY
-	end, "RaidFinder.Right.Upoutside")
+	end, "NewRaidFinder.Right.Upoutside")
 	
 	button:EventAttach(Event.UI.Input.Mouse.Wheel.Forward, function(self)
 		if rfsettings.UIlock == true then return end
@@ -3532,7 +3571,7 @@ function rf.UI:addonButton()
 		button:SetHeight(35 * rfsettings.aButtonS)
 		
 		
-	end, "RaidFinder.Wheel.Forward")
+	end, "NewRaidFinder.Wheel.Forward")
 	
 	button:EventAttach(Event.UI.Input.Mouse.Wheel.Back, function(self)
 		if rfsettings.UIlock == true then return end
@@ -3543,7 +3582,7 @@ function rf.UI:addonButton()
 		button:SetHeight(35 * rfsettings.aButtonS)
 		
 		
-	end, "RaidFinder.Wheel.Back")	
+	end, "NewRaidFinder.Wheel.Back")	
 	
 	
 end
@@ -3576,10 +3615,10 @@ function rf.slash(params)
 	end
 end
 
-Command.Event.Attach(Event.Addon.Load.End, rf.main, "RaidFinder.Addon.Load.End")
+Command.Event.Attach(Event.Addon.Load.End, rf.main, "NewRaidFinder.Addon.Load.End")
 Command.Event.Attach(Event.System.Secure.Enter, function() rf.secure = true end, "nkManager.Ssytem.Secure.Enter")
 Command.Event.Attach(Event.System.Secure.Leave, function() rf.secure = false end, "nkManager.Ssytem.Secure.Leave")
-table.insert(Event.Addon.SavedVariables.Load.End, 	{rf.settings, 			"RaidFinder", "VaiablesLoaded"})
-table.insert(Event.Message.Receive, 				{rf.receive, 			"RaidFinder", "Received Message"})
-table.insert(Command.Slash.Register("rf"), 			{rf.slash, 				"RaidFinder", "Slash Cmd"})
-table.insert(Command.Slash.Register("RaidFinder"), 	{rf.slash, 				"RaidFinder", "Slash Cmd"})
+table.insert(Event.Addon.SavedVariables.Load.End, 	{rf.settings, 			"NewRaidFinder", "VaiablesLoaded"})
+table.insert(Event.Message.Receive, 				{rf.receive, 			"NewRaidFinder", "Received Message"})
+table.insert(Command.Slash.Register("rf"), 			{rf.slash, 				"NewRaidFinder", "Slash Cmd"})
+table.insert(Command.Slash.Register("NewRaidFinder"), 	{rf.slash, 				"NewRaidFinder", "Slash Cmd"})
