@@ -8,3 +8,5 @@ This addon was originally created by <a href="https://github.com/demivion">Vexxx
 Developing language: LUA
 
 To use this addon, put all the files in Documents\RIFT\Interface\Addons and activate it in-game.
+
+Visit the <a href="http://forums.riftgame.com/technical-discussions/addons-macros-ui/459834-addon-new-raid-finder.html">Official thread on RIFT Forums</a>.
