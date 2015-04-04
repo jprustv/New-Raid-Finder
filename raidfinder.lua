@@ -241,7 +241,7 @@ end
 
 function rf.updateAchievementsTable()
 	local achList = Inspect.Achievement.List()
-	--Command.System.Watchdog.Quiet()
+	Command.System.Watchdog.Quiet()
 		
 	for k,v in pairs(achList) do
 		local achiev = Inspect.Achievement.Detail(k)
