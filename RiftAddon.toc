@@ -4,7 +4,7 @@ NameShort = "RF"
 Description = "The New Raid Finder"
 Author = "Johnnycash@Deepwood"
 Website = "http://www.curse.com/addons/rift/new-raid-finder"
-Version = "2.1"
+Version = "2.2"
 Email = "jprustv@live.com"
 Environment = "3.1"
 
@@ -25,7 +25,7 @@ Dependencies = {
 SavedVariables = {
   rfsettings = "character",
 }
--- X-Curse-Packaged-Version: v2.1
+-- X-Curse-Packaged-Version: v2.2
 -- X-Curse-Project-Name: New Raid Finder
 -- X-Curse-Project-ID: new-raid-finder
 -- X-Curse-Repository-ID: rift/new-raid-finder/mainline

@@ -1,0 +1,2 @@
+- Fixed a bug that when you switch characters, your experience was showing always 0 0 0 0.
+- Instructions tab have been updated explaining how Experience works.
